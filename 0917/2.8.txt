@@ -2,10 +2,10 @@
 2. CF, ZF, SF, OF
 3. CF
 4. OF
-5. True
+5. False
 6. SF
 7. FPU
-8. 80
+8. 80 bits
 9. True
 10. False
 11. True
@@ -22,5 +22,5 @@
 22. True
 23. False
 24. False
-25. 1
-26. 1
+25. 모든 수준(levels) 가능
+26. 지연 감소, 성능 향상
