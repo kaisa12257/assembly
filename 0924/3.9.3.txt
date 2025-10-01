@@ -1,0 +1,134 @@
+ 1 - Integer Expression Calculation
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+.data
+A DWORD 5
+B DWORD 3
+C DWORD 2
+D DWORD 4
+
+.code
+main PROC
+    mov eax, A
+    add eax, B
+
+    mov ecx, C
+    add ecx, D
+
+    sub eax, ecx
+
+    INVOKE ExitProcess,0
+main ENDP
+END main
+
+ 2 - Symbolic Integer Constants
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+SUNDAY    = 0
+MONDAY    = 1
+TUESDAY   = 2
+WEDNESDAY = 3
+THURSDAY  = 4
+FRIDAY    = 5
+SATURDAY  = 6
+
+.data
+days DWORD SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
+
+.code
+main PROC
+    INVOKE ExitProcess,0
+main ENDP
+END main
+
+ 3 - Data Definitions
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+.data
+myByte     BYTE    16
+myNegByte  SBYTE   -20
+myWord     WORD    512
+myNegWord  SWORD   -300
+myDword    DWORD   12345678h
+myNegDword SDWORD  -12345678
+myFword    FWORD   123456789ABCh
+myQword    QWORD   1122334455667788h
+myTbyte    TBYTE   1234567890123456789h
+myReal4    REAL4   1.23
+myReal8    REAL8   3.14159265358979
+myReal10   REAL10  2.718281828459045
+
+.code
+main PROC
+    INVOKE ExitProcess,0
+main ENDP
+END main
+
+ 4 - Symbolic Text Constants
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+HELLO    TEXTEQU <"Hello, World!">
+GOODBYE  TEXTEQU <"Goodbye">
+NAME     TEXTEQU <"Assembly Language">
+
+.data
+msg1 BYTE HELLO,0
+msg2 BYTE GOODBYE,0
+msg3 BYTE NAME,0
+
+.code
+main PROC
+    INVOKE ExitProcess,0
+main ENDP
+END main
+
+; Program 5 - AddTwoSum
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+.data
+num1 DWORD 5
+num2 DWORD 7
+sum  DWORD 0
+
+.code
+main PROC
+    mov eax, num1
+    add eax, num2
+    mov sum, eax
+    INVOKE ExitProcess,0
+main ENDP
+END main
+
+6 - AddVariables 64-bit
+option casemap:none
+extrn ExitProcess:PROC
+
+.data
+val1 QWORD 10000000000
+val2 QWORD 20000000000
+sum  QWORD 0
+
+.code
+main PROC
+    mov rax, qword ptr [val1]
+    add rax, qword ptr [val2]
+    mov qword ptr [sum], rax
+    sub rsp,28h
+    call ExitProcess
+main ENDP
+END

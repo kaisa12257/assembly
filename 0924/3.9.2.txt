@@ -1,0 +1,19 @@
+1. DEC_25 EQU 25
+BIN_25 EQU 11001b
+OCT_25 EQU 31o
+HEX_25 EQU 19h
+2. 가능하지만 링커가 하나로 병합
+3. myDword BYTE 12h,34h,56h,78h
+4. 가능, 어셈블러는 타입 체크 엄격하지 않음
+5. add eax,5
+add edx,5
+6. AB 89 67  4
+7. array DWORD 120 DUP(?)
+8. letters BYTE 'A','B','C','D','E'
+9. minInt SDWORD -2147483648
+10. wArray WORD 1000h,2000h,3000h
+11. colorName BYTE "Blue",0
+12. dArray SDWORD 50 DUP(?)
+13. testStr BYTE 500 DUP("TEST")
+14. bArray BYTE 20 DUP(0)
+15. 78 56 34 12
