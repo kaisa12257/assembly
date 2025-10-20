@@ -1,0 +1,186 @@
+1. (a) FFFF8002h   (b) 00004321h
+2. 10020000h
+3. 3002FFFFh
+4. 10020001h
+5.  0
+6. EAX = FFFFFFFFh,  1
+7. Overflow 플래그로 signed 범위 초과 여부 확인 가능
+8. 0000000044445555h
+9. 0000000084326732h
+10. 00035678h
+11. 12341237h
+12. No
+13. Yes
+14. Yes
+15. No
+16.b,d,e,g 만 명령어이다.
+17. AL = FCh, AH = 01h
+18. AX = 1000h, 3000h, FFF0h, 4000h
+19. EDX = 00000001h, 00001000h, 00000002h, FFFFFFFCh
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+1. 
+mov ax, word ptr three
+mov dx, word ptr three+2
+mov word ptr three, dx
+mov word ptr three+2, ax  
+2.  
+xchg al, bl
+xchg al, cl
+xchg al, dl
+3.
+test al, al       ;
+jpo odd_parity     
+4.  
+mov al, -120  
+add al, -120  
+; OF=1 발생  
+5.  
+mov al, 0FFh
+add al, 01h
+6  
+mov al, 00h
+sub al, 01h
+ 7. 
+mov eax, val1
+sub eax, val3
+sub eax, val2
+add eax, 7
+8.  
+mov eax, 0          
+mov ecx, 0          
+mov ebx, length      
+
+sum_loop:
+    add eax, [array + ecx*4]  
+    inc ecx                    
+    cmp ecx, ebx               
+    jl sum_loop                
+9. 
+mov ax, val2  
+add ax, bx  
+sub ax, val4  
+10. 
+mov al, 80h    ; 
+add al, 80h    ; 
+11.  
+mov al, 0FFh     ; 
+inc al           ; 
+jz overflow      ; 
+
+mov al, 00h      ; 
+dec al           ; 
+jnz underflow    ; 
+12. 
+.data
+ALIGN 2
+myBytes BYTE 10h, 20h, 30h, 40h
+13.
+mov eax, TYPE myBytes
+mov eax, LENGTHOF myBytes
+mov eax, SIZEOF myBytes
+mov eax, TYPE myWords
+mov eax, LENGTHOF myWords
+mov eax, SIZEOF myWords
+mov eax, SIZEOF myString
+14.  
+mov dx, word ptr myBytes
+15.  
+mov al, BYTE PTR [myWords+1]  
+16. 
+mov eax, dword ptr myBytes
+17.
+myWords WORD 3 DUP(?), 2000h
+18. 
+myBytes BYTE 10h, 20h, 30h, 40h
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+1.
+mov al, [bigEndian]
+mov [littleEndian], al
+mov al, [bigEndian+1]
+mov [littleEndian+1], al
+mov al, [bigEndian+2]
+mov [littleEndian+2], al
+mov al, [bigEndian+3]
+mov [littleEndian+3], al
+2.
+mov ecx, 0
+loop_start:
+  mov al, [array+ecx]
+  mov ah, [array+ecx+1]
+  mov [array+ecx], ah
+  mov [array+ecx+1], al
+  add ecx, 2
+  cmp ecx, length
+  jl loop_start
+3.
+mov eax, 0
+mov ecx, 1
+loop_start:
+  mov edx, [array+ecx*4]
+  sub edx, [array+(ecx-1)*4]
+  add eax, edx
+  inc ecx
+  cmp ecx, length
+  jl loop_start
+4.
+mov cx, 0
+loop_start:
+  mov ax, [wordArray+cx*2]
+  movzx eax, ax
+  mov [dwordArray+cx*4], eax
+  inc cx
+  cmp cx, length
+  jl loop_start
+5.
+mov eax, 1  ; Fib(1)
+mov ebx, 1  ; Fib(2)
+mov ecx, 3  ; n=3부터 시작
+loop_start:
+  mov edx, eax
+  add edx, ebx ; Fib(n) = Fib(n-1) + Fib(n-2)
+  mov eax, ebx
+  mov ebx, edx
+  inc ecx
+  cmp ecx, 8
+  jl loop_start
+6.
+mov esi, 0
+mov edi, length-1
+loop_start:
+  mov al, [array+esi]
+  mov ah, [array+edi]
+  mov [array+esi], ah
+  mov [array+edi], al
+  inc esi
+  dec edi
+  cmp esi, edi
+  jl loop_start
+7.
+mov esi, LENGTHOF source-1
+mov edi, 0
+loop_start:
+  mov al, [source+esi]
+  mov [target+edi], al
+  dec esi
+  inc edi
+  cmp esi, -1
+  jg loop_start
+8.
+mov eax, [array+ (length-1)*4] ; 마지막 요소 저장
+mov ecx, length-2
+loop_start:
+  mov edx, [array+ecx*4]
+  mov [array+(ecx+1)*4], edx
+  dec ecx
+  cmp ecx, -1
+  jg loop_start
+mov [array], eax ; 마지막 요소를 맨 앞에 저장
+
+
+
+
+
+
+
+
+
