@@ -1,0 +1,72 @@
+5장에서는 procedures에 대해서 설명하고있는데
+먼저 스택의 구조는 아래에서 부터 위로 쌓이는 방식이다. 그리고 실행중인 스택은 cpu가 직접 관리하는 메모리 배열이며 스택포인트 레지스터에 으ㅔ해서 제어된다. 또한 32비트 push연산은  스택 포인터를 4만큼 감소시키고 그 스택 포인터가 가리키는 메모리의 위치에 데이터를 복사한다. 로컬변수 저장소는 임시 로컬 변수를 제공하며 레지스터 세이빙은 일시적 저장용 저장장치이다. 그리고 Argument passing은 입력값을 서브루틴으로 전달한다. 그리고 마지막으로 return address storage는 서브루틴 호출시 반환주소를 저장을 한다.
+push의 사용예로
+push reg/mem16
+push reg/mem32
+push imm32 처럼 쓰일수있다. 
+그리고 pop는 
+pop reg/ mem16
+pop reg/ mem12
+으로 사용이 된다.
+saving과 restoring registers이외의 반환값을 저장하는 레지스터 즉 EAX에 해당한다,
+
+USES지시어는 어셈블리에서 두가지 작업을 하게하는데 
+첫번째로 프로시저의 시작 부분에서 지정한 레지스터들을 스택에 PUSH(저장)하고
+두번째로 프로시저의 끝부분에서 같은 레지스터들을 POP(복원) 하도록 코드 생성한다.
+
+kernel32.lib 파일은 Microsoft Windows Platform SDK(소프트웨어 개발 키트) 의 일부이며,
+kernel32.dll 파일 안에 있는 시스템 함수(System Functions) 들에 대한 링크 정보(linking information) 를 포함하고 있다.
+kernel32.dll 은 MS-Windows의 핵심 구성 요소로,
+동적 연결 라이브러리(Dynamic Link Library, DLL) 라고 불린다.
+이 파일 안에는 문자 기반 입출력(character-based I/O) 을 수행하는 실행 가능한 함수들이 들어 있다.
+irvine32라이브러리 에 포함되어있는 함수 목록과 기능 으로써는
+
+| CloseFile           | 이전에 연 파일을 닫는다.                                    
+| Clrscr              | 콘솔 화면을 지우고 커서를 왼쪽 위로 이동한다.                       
+| CreateOutputFile    | 출력용 새 디스크 파일을 생성한다.                               
+| Crlf                | 줄바꿈(엔드라인) 문자를 출력한다.                               
+| Delay               | 지정한 밀리초 동안 프로그램 실행을 일시정지한다.                       
+| DumpMem             | 메모리 블록을 16진수로 콘솔에 표시한다.                           
+| DumpRegs            | 주요 레지스터(EAX, EBX, ECX 등)와 CPU 상태 플래그를 16진수로 표시한다. 
+| GetCommandTail      | 명령줄 인자(command-line arguments)를 바이트 배열로 복사한다.     
+| GetDateTime         | 시스템에서 현재 날짜와 시간을 가져온다.                            
+| GetMaxXY            | 콘솔 창의 열과 행의 개수를 가져온다.                            
+| GetMseconds         | 자정 이후 경과한 밀리초 수를 반환한다.                            
+| GetTextColor        | 현재 텍스트 전경색과 배경색을 반환한다.                            
+| Gotoxy              | 콘솔 커서를 지정한 행(row)과 열(column)로 이동시킨다.              
+| IsDigit             | AL 레지스터의 값이 숫자(0–9)의 ASCII 코드인지 확인하고 ZF 설정.       
+| MsgBox              | 팝업 메시지 상자를 표시한다.                                  
+| MsgBoxAsk           | 예/아니오 질문 팝업 메시지 상자를 표시한다.                         
+| OpenInputFile       | 기존 입력용 파일을 연다.                                    
+| ParseDecimal32      | 10진 문자열을 부호 없는 32비트 정수로 변환한다.                     
+| ParseInteger32      | 10진 문자열을 부호 있는 32비트 정수로 변환한다.                     
+| Random32            | 0~FFFFFFFFh 범위의 32비트 난수를 생성한다.                    
+| Randomize           | 난수 생성기를 고유한 시드로 초기화한다.                            
+| RandomRange         | 지정된 범위 내의 난수를 생성한다.                               
+| ReadChar            | 키보드로부터 문자 1개를 입력받는다.                              
+| ReadDec             | 부호 없는 32비트 10진수를 입력받는다.                           
+| ReadFromFile        | 디스크 파일을 버퍼로 읽는다.                                  
+| ReadHex             | 32비트 16진수를 입력받는다.                                 
+| ReadInt             | 부호 있는 32비트 10진수를 입력받는다.                           
+| ReadKey             | 키보드 버퍼에서 대기 없이 문자 1개를 읽는다.                        
+| ReadString          | 문자열을 입력받는다(엔터로 종료).                              
+| SetTextColor        | 이후 출력되는 텍스트의 전경색/배경색을 설정한다.                       
+| Str_compare         | 두 문자열을 비교한다.                                     
+| Str_copy            | 문자열을 복사한다.                                        
+| Str_length          | 문자열의 길이를 EAX에 반환한다.                               
+| Str_trim            | 문자열의 불필요한 문자를 제거한다.                               
+| Str_ucase           | 문자열을 대문자로 변환한다.                                  
+| WaitMsg             | 메시지를 표시하고 키 입력을 기다린다.                             
+| WriteBin            | 부호 없는 32비트 정수를 2진수 형태로 출력한다.                      
+| WriteBinB           | 바이트/워드/더블워드 단위의 2진수 값을 출력한다.                      
+| WriteChar           | 문자 1개를 콘솔에 출력한다.                                  
+| WriteDec            | 부호 없는 32비트 정수를 10진수로 출력한다.                        
+| WriteHex            | 32비트 정수를 16진수로 출력한다.                              
+| WriteHexB           | 바이트/워드/더블워드 정수를 16진수로 출력한다.                       
+| WriteInt            | 부호 있는 32비트 정수를 10진수로 출력한다.                       
+| WriteStackFrame     | 현재 프로시저의 스택 프레임을 콘솔에 출력한다.                        
+| WriteStackFrameName | 현재 프로시저의 이름과 스택 프레임을 콘솔에 출력한다.                    
+| WriteString         | 널 종료 문자열을 콘솔에 출력한다.                               
+| WriteToFile         | 버퍼를 출력 파일에 기록한다.                                  
+| WriteWindowsMsg     | 가장 최근의 Windows 오류 메시지를 출력한다.    
+등등이 있다.                  

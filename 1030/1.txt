@@ -1,0 +1,176 @@
+1.PUSHAD
+2.PUSHFD
+3.POPFD
+4.선택적 PUSH 가능 → 더 효율적
+5.sub esp, 4 / mov [esp], eax
+6.True
+7.False
+8.True
+9.False
+10.True
+11.True
+12.False
+13.True
+14.AX 사용, 2바이트씩 증가
+15.5
+16.a
+17.c
+18.d
+19.d
+20.[10, 20, 30, 40]
+
+; 1
+push eax
+push ebx
+pop eax
+pop ebx
+
+; 2
+pop eax
+add eax, 3
+push eax
+
+; 3
+sub esp, 8
+mov DWORD PTR [esp], 1000h
+mov DWORD PTR [esp+4], 2000h
+
+; 4
+mov eax, [esi]
+mov [esi-4], eax
+
+; 5
+pop eax
+push eax
+call WriteHex
+call Crlf
+ret
+
+3-1
+mov ecx,4
+mov eax,0
+L1: mov ebx,eax
+    call SetTextColor
+    mov edx,OFFSET msg
+    call WriteString
+    call Crlf
+    inc eax
+loop L1
+3-2
+mov esi,OFFSET chars
+mov edi,OFFSET links
+mov ebx,start
+mov ecx,8
+mov edx,OFFSET output
+L2: mov al,[esi+ebx]
+    mov [edx],al
+    inc edx
+    mov ebx,[edi+ebx*4]
+loop L2
+3-3
+call Clrscr
+call ReadInt
+mov ebx,eax
+call ReadInt
+add eax,ebx
+call Crlf
+call WriteInt
+3-4
+mov ecx,3
+L4: call Clrscr
+    call ReadInt
+    mov ebx,eax
+    call ReadInt
+    add eax,ebx
+    call Crlf
+    call WriteInt
+loop L4
+3-5
+BetterRandomRange PROC USES edx
+    sub eax,ebx
+    call RandomRange
+    add eax,ebx
+    ret
+BetterRandomRange ENDP
+3-6
+RandomCaps PROC USES ecx ebx
+    mov ecx,eax
+L6: mov eax,26
+    call RandomRange
+    add eax,'A'
+    mov [edx],al
+    inc edx
+loop L6
+    ret
+RandomCaps ENDP
+3-7
+mov ecx,100
+L7: mov eax,100
+    call Delay
+    call Random32
+    and eax,0FFFFh
+    mov dl,al
+    shr eax,8
+    mov dh,al
+    call Gotoxy
+    mov al,'*'
+    call WriteChar
+loop L7
+3-8
+mov dl,0
+L8outer:
+  mov dh,0
+L8inner:
+  mov ebx,edx
+  call SetTextColor
+  mov al,'#'
+  call WriteChar
+  inc dh
+  cmp dh,16
+  jl L8inner
+  call Crlf
+  inc dl
+  cmp dl,16
+  jl L8outer
+3-9
+.data
+count DWORD 0
+.code
+Rec PROC
+  inc count
+  loop Rec
+  ret
+Rec ENDP
+mov ecx,10
+call Rec
+3-10
+mov DWORD PTR [edi],1
+mov DWORD PTR [edi+4],1
+mov eax,1
+mov ebx,1
+mov ecx,45
+mov esi,8
+L10: mov edx,eax
+     add edx,ebx
+     mov [edi+esi],edx
+     mov eax,ebx
+     mov ebx,edx
+     add esi,4
+loop L10
+3-11
+.data arr BYTE 50 DUP(0)
+.code
+mov ecx,50
+mov esi,OFFSET arr
+L11a: mov BYTE PTR [esi],0
+      inc esi
+loop L11a
+mov ebx,2
+mov eax,0
+L11b: add eax,ebx
+      cmp eax,50
+      jge L11done
+      mov BYTE PTR arr[eax],1
+      jmp L11b
+L11done:
+
