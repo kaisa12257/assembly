@@ -1,0 +1,80 @@
+6장
+어셈블리 언어는 원시적 언어이지만 의사결정 로직에는 많은 도구를 쓴다. 
+Boolean Operations -----
+AND, OR, NOT 같은 논리 연산 명령을 사용하여 조건을 평가하는 방법을 배운다 예: test, and, or, not
+IF Statements	
+고급언어의 if 문을 어셈블리에서 **cmp + 조건점프(Jxx)**로 구현하는 법. 예: cmp eax, ebx→jg Label`
+Bit Manipulation	
+이진수에서 특정 비트를 켜거나(1), 끄거나(0) 하는 방법. 예: or, and, shl, shr, bts, btr 등이 있다/
+Data Encryption	
+비트 연산(xor)을 이용한 간단한 데이터 암호화 기법 학습. XOR는 암호화의 기본 원리로 자주 사용됨.
+Signed vs Unsigned Numbers	
+부호 있는(signed) 수와 부호 없는(unsigned) 수의 비교가 다르다는 점을 구분. 예: jl(signed), jb(unsigned)
+그리고 
+AND라는 명령어는 소스와 목젖기 피연산자 간에 AND연산을 수행한다.
+OR은 소스와 목적지 간에 OR연산을 수행하며
+XOR은 베타적 논리합으로써 서로다른 비트일때 1, 같은 비트일때는 0으로 표시한다.
+NOT는 단일 피연산자에 대해 비트를 반전한다
+TEST는 AND처럼 두 값을  AND하지만, 결과를 저장하지 않고 플래그인만 설정한다.
+cmp는 내부적으로 dest - src를 계산하지만 결과는 계산하지 않는다. 다시 말해 실제로는 뺄샘을 연산처럼 작동하지만 dest나 src값은 드대로 라는 뜻이다.
+또한 x86 명령어 집합에는 if, else, while, for 같은 고급 논리 구조가 없으나 비교(CMP, TEST) 와 조건 분기(Jxx) 명령을 조합하면 이런 고급 구조를 직접 구현할 수 있다.
+
+JZ	zero	ZF = 1	연산 결과가 0이면 점프 (Equal)
+JNZ	not zero	ZF = 0	연산 결과가 0이 아니면 점프 (Not equal)
+JC	carry	CF = 1	자리 올림(borrow/carry) 발생 시 점프 (Unsigned 비교 시 작음)
+JNC	not carry	CF = 0	자리 올림 없음 → 점프 (Unsigned 비교 시 크거나 같음)
+JO	overflow	OF = 1	오버플로 발생 시 점프 (Signed 비교 시 오차 발생)
+JNO	not overflow	OF = 0	오버플로 발생 안 하면 점프
+JS	signed	SF = 1	결과가 음수면 점프 (부호 비트가 1)
+JNS	not signed	SF = 0	결과가 양수면 점프
+JP	parity (even)	PF = 1	결과의 1비트 개수가 짝수일 때 점프
+JNP	not parity (odd)	PF = 0	결과의 1비트 개수가 홀수일 때 점프
+
+
+JA	Jump if above (if leftOp > rightOp)	왼쪽이 오른쪽보다 크면 점프 (CF=0, ZF=0)
+JNBE	Jump if not below or equal (same as JA)	JA와 동일 — “크면 점프”
+JAE	Jump if above or equal (if leftOp ≥ rightOp)	크거나 같으면 점프 (CF=0)
+JNB	Jump if not below (same as JAE)	JAE와 동일 — “크거나 같으면 점프”
+JB	Jump if below (if leftOp < rightOp)	작으면 점프 (CF=1)
+JNAE	Jump if not above or equal (same as JB)	JB와 동일 — “작으면 점프”
+JBE	Jump if below or equal (if leftOp ≤ rightOp)	작거나 같으면 점프 (CF=1 또는 ZF=1)
+JNA	Jump if not above (same as JBE)	JBE와 동일 — “작거나 같으면 점프한다
+
+
+G	Jump if greater (leftOp > rightOp)	왼쪽이 오른쪽보다 크면 점프 (ZF=0, SF=OF)
+JNLE	Jump if not less or equal (same as JG)	JG와 동일 – 크면 점프
+JGE	Jump if greater or equal (leftOp ≥ rightOp)	크거나 같으면 점프 (SF=OF)
+JNL	Jump if not less (same as JGE)	JGE와 동일 – 크거나 같으면 점프
+JL	Jump if less (leftOp < rightOp)	작으면 점프 (SF≠OF)
+JNGE	Jump if not greater or equal (same as JL)	JL과 동일 – 작으면 점프
+JLE	Jump if less or equal (leftOp ≤ rightOp)	작거나 같으면 점프 (ZF=1 또는 SF≠OF)
+JNG	Jump if not greater (same as JLE)	JLE와 동일 – 작거나 같으면 점프한다
+
+
+.BREAK 반복문 즉시 종료 (break와 동일)
+.CONTINUE 반복문의 맨 위로 이동 (continue와 동일)
+ELSE 조건이 거짓일 때 실행되는 블록 시작 (else)
+.ELSEIF condition 여러 조건을 순서대로 검사 (else if)
+ENDIF 조건문 블록 종료
+.ENDW while 반복문 종료
+IF condition 조건이 참이면 블록 실행 (if
+REPEAT do { … } until(condition) 형태 반복 시작
+UNTIL condition 조건이 참이 될 때까지 반복
+UNTILCXZ CX 레지스터가 0이 될 때까지 반복
+WHILE condition while(condition) 형태 반복 시작
+
+
+expr1 == expr2		두 값이 같으면 참
+expr1 != expr2	두 값이 다르면 참
+expr1 > expr2		왼쪽이 오른쪽보다 크면 참
+expr1 >= expr2	왼쪽이 오른쪽보다 크거나 같으면 참
+expr1 < expr2		왼쪽이 오른쪽보다 작으면 참
+expr1 <= expr2	.	왼쪽이 오른쪽보다 작거나 같으면 참
+!expr	.	NOT — 조건 부정
+expr1 	두 조건이 모두 참일 때 참
+expr1 & expr2	.	비트 단위 AND
+CARRY?		캐리 발생 시 참 (unsigned 연산)
+OVERFLOW?		오버플로 발생 시 참 (signed 연산)
+PARITY?		결과의 1 비트 수가 짝수면 참
+SIGN?		결과가 음수면 참
+ZERO?		결과가 0이면 참

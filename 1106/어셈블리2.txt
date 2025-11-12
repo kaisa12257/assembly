@@ -1,0 +1,324 @@
+1 BX = 006Bh2
+2 BX = 0092h
+3 BX = 64BBh
+4 BX = A857h
+5 EBX = 3FAFF69Fh
+6 RBX = F5059B64h
+7 a=2Dh b=48h c=6Fh d=A3h
+8 a=85h b=34h c=BFh d=AEh
+9 a CF=0 ZF=0 SF=0 b CF=0 ZF=0 SF=0 c CF=1 ZF=0 SF=1
+10 JECXZ (또는 LOOP)
+11 JA, JNBE → CF=0 ZF=0
+12 EDX = 1
+13 EDX = 1
+14 EDX = 0
+15 True
+16 True
+17 RBX = 80h
+18 RBX = 808080h
+19 RBX = 80808080h
+
+
+1.
+cmp al,9
+jbe skip
+sub al,30h
+skip:
+2.
+mov eax,[operand]
+mov ebx,eax
+shr ebx,16
+xor eax,ebx
+mov ebx,eax
+shr ebx,8
+xor al,bl
+3. mov eax,SetX
+mov ebx,SetY
+not ebx
+and eax,ebx
+4.
+cmp dx,cx
+jbe L1
+5.
+cmp ax,cx
+jg L2
+6.
+and al,0FCh
+jz L3
+jnz L4
+7.
+mov eax,val1
+cmp eax,ecx
+jle ElsePart
+cmp ecx,edx
+jle ElsePart
+mov X,1
+jmp EndIf
+ElsePart:
+mov X,2
+EndIf:
+8.
+cmp ebx,ecx
+jg TruePart
+cmp ebx,val1
+jg TruePart
+mov X,2
+jmp EndIf
+TruePart:
+mov X,1
+EndIf:
+9.
+cmp ebx,ecx
+jg TruePart
+cmp ebx,val1
+jg TruePart
+mov X,2
+jmp EndIf
+TruePart:
+mov X,1
+EndIf:
+10.
+WhileTop:
+cmp N,0
+jle EndWhile
+cmp N,3
+je ElsePart
+mov eax,N
+cmp eax,A
+jl Sub2
+cmp eax,B
+jg Sub2
+jmp ElsePart
+Sub2:
+sub N,2
+jmp WhileTop
+ElsePart:
+sub N,1
+jmp WhileTop
+EndWhile:
+
+
+1.
+FillArray PROC
+; ESI=array, ECX=count, EDX=j, EBX=k
+mov eax, k
+sub eax, edx
+inc eax        ; range = k-j+1
+L1:
+    push ecx
+    mov ecx, eax
+    call RandomRange
+    add eax, edx
+    mov [esi], eax
+    add esi, 4
+    pop ecx
+loop L1
+ret
+FillArray ENDP
+
+2.
+SumInRange PROC
+mov eax,0
+L1:
+    mov edx,[esi]
+    cmp edx,j
+    jl Skip
+    cmp edx,k
+    jg Skip
+    add eax,edx
+Skip:
+    add esi,4
+loop L1
+ret
+SumInRange ENDP
+
+3.
+CalcGrade PROC
+cmp eax,90
+jae A_Grade
+cmp eax,80
+jae B_Grade
+cmp eax,70
+jae C_Grade
+cmp eax,60
+jae D_Grade
+mov al,'F'
+ret
+A_Grade: mov al,'A'
+ret
+B_Grade: mov al,'B'
+ret
+C_Grade: mov al,'C'
+ret
+D_Grade: mov al,'D'
+ret
+CalcGrade ENDP
+
+4.
+INCLUDE Irvine32.inc
+
+.data
+msgCredits BYTE "Enter credits (1-30): ",0
+msgGrade   BYTE "Enter grade average (0~4): ",0
+msgError   BYTE "Invalid credits!",0
+msgCan     BYTE "The student can register.",0
+msgCannot  BYTE "The student cannot register.",0
+
+credits DWORD ?
+grade   DWORD ?
+
+.code
+main PROC
+    mov edx, OFFSET msgCredits
+    call WriteString
+    call ReadInt
+    mov credits, eax
+
+    cmp eax, 1
+    jl Invalid
+    cmp eax, 30
+    jg Invalid
+
+    mov edx, OFFSET msgGrade
+    call WriteString
+    call ReadInt
+    mov grade, eax
+
+    cmp eax, 2
+    jl Cannot
+    jmp Can
+
+Invalid:
+    mov edx, OFFSET msgError
+    call WriteString
+    jmp EndProgram
+
+Can:
+    mov edx, OFFSET msgCan
+    call WriteString
+    jmp EndProgram
+
+Cannot:
+    mov edx, OFFSET msgCannot
+    call WriteString
+
+EndProgram:
+    call Crlf
+    exit
+main ENDP
+END main
+
+5. 
+OpTable DWORD AND_Label, OR_Label, NOT_Label, XOR_Label, Exit_Label
+
+6.
+AND_op PROC
+call ReadHex
+mov ebx, eax
+call ReadHex
+and eax, ebx
+call WriteHex
+ret
+AND_op ENDP 
+
+8.
+Encrypt PROC
+; ESI=message, EDI=key, ECX=len
+L1:
+  mov al,[esi]
+  mov bl,[edi]
+  xor al,bl
+  mov [esi],al
+  inc esi
+  inc edi
+  cmp byte ptr [edi],0
+  jne SkipReset
+  mov edi, OFFSET key
+SkipReset:
+loop L1
+ret
+Encrypt ENDP
+Encrypt PROC
+; ESI=message, EDI=key, ECX=len
+L1:
+  mov al,[esi]
+  mov bl,[edi]
+  xor al,bl
+  mov [esi],al
+  inc esi
+  inc edi
+  cmp byte ptr [edi],0
+  jne SkipReset
+  mov edi, OFFSET key
+SkipReset:
+loop L1
+ret
+Encrypt ENDP
+
+9.
+Validate_PIN PROC
+mov ecx,5
+mov edi,OFFSET minArr
+mov ebx,OFFSET maxArr
+mov esi,OFFSET pinArr
+mov eax,1        ; position counter
+L1:
+  mov dl,[esi]
+  cmp dl,[edi]
+  jb Invalid
+  cmp dl,[ebx]
+  ja Invalid
+  inc esi
+  inc edi
+  inc ebx
+  inc eax
+loop L1
+xor eax,eax
+ret
+Invalid:
+ret
+Validate_PIN ENDP
+
+10.
+ParityCheck PROC
+mov al,0
+L1:
+  xor al,[esi]
+  inc esi
+loop L1
+; al의 parity가 짝수면 PF=1
+setp al
+movzx eax,al
+ret
+ParityCheck ENDP
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
