@@ -1,0 +1,25 @@
+7장에서는
+SHL	Shift left	논리적 왼쪽 시프트 
+SHR	Shift right	논리적 오른쪽 시프트 
+SAL	Shift arithmetic left	SHL과 동일 
+SAR	Shift arithmetic right	산술적 오른쪽 시프트 
+ROL	Rotate left	순환 회전 왼쪽
+ROR	Rotate right	순환 회전 오른쪽
+RCL	Rotate carry left	CF 포함 왼쪽 회전
+RCR	 Rotate carry right	CF 포함 오른쪽 회전
+SHLD	 Double-precision shift left	2레지스터 연동 shift left
+SHRD 	Double-precision shift right	2레지스터 연동 shift right
+라는 뜻을 가지고 있다.
+그리고 SHL 는 논리적 왼쪽 시프트(Logical Left Shift)로써
+왼쪽으로 비트를 이동시키고, 가장 오른쪽 비트는 항상 0으로 채운다.
+SAL는 SHL과 완전히 동일한 명령어로써
+산술적 왼쪽 시프트지만, 실제로는 논리적 왼쪽 시프트(SHL) 와 100% 같은 동작을 한다.
+ROL의 동작 원리는  최상위 비트(MSB)는 CF(Carry Flag) 로 이동하고 그 비트는 다시 LSB(맨 오른쪽) 로 들어간다. 즉 비트 손실이 없다라는 점에서 Shift와 다르다.
+ROR 동작 원리는 LSB(최하위 비트) → CF(Carry Flag) 로 이동 그리고 그 동시에 그 LSB가 다시 MSB(최상위 비트) 자리로 들어감 또 비트 손실이 없다
+RCL 동작 원리는 왼쪽으로 회전하되 CF도 함께 포함되는 9비트 회전(8bit 기준)으로 이다.
+
+
+
+
+
+
