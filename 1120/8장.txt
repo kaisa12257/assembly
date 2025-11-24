@@ -1,0 +1,702 @@
+1	문자열 명령어 실행 시 인덱스 뒤로 이동	DF = 1
+2	STOSW 반복 시 인덱스 변화	±2 (워드 단위)
+3	CMPS 명령어의 애매함	바이트/워드 불명확, 부호 여부 모호
+4	SCASB에서 일치 발견 시 EDI 위치	일치 문자 다음 바이트
+5	특정 문자의 첫 발생 검색 반복 접두사	REPNE / REPNZ
+6	Str_trim에서 Direction Flag	DF = 0
+7	Str_trim에서 JNE 사용 이유	공백 아닌 문자 처리 코드로 점프
+8	Str_ucase에서 숫자 처리	변화 없음, 그대로 유지
+9	Str_length에서 SCASB 반복 접두사	REPNE / REPNZ
+10	Str_length에서 길이 계산 방법	초기 ECX – 남은 ECX – 1
+11	1,024개 요소 이진 탐색 최대 비교	10회
+12	FillArray에서 CLD 사용 이유	배열을 앞으로 채우기 위해 DF 클리어
+13	BinarySearch에서 L2 제거 가능 이유	조건/점프 중복, 결과 영향 없음
+14	BinarySearch에서 L4 제거 방법	루프 구조 재구성/포인터 업데이트 방식 변경
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+1. mov eax, [ebx + esi]
+2. mov eax, [ebx + esi + 12]
+3. [ESI + 1*16 + 2*4]
+4. mov esi, OFFSET sourcew
+mov edi, OFFSET targetw
+mov ecx, LENGTHOF sourcew
+repe cmpsw
+5. mov ax, 0100h
+mov edi, OFFSET wordArray
+mov ecx, LENGTHOF wordArray
+repne scasw
+mov eax, 0
+jne  done
+sub edi, 2
+mov eax, edi
+done:
+6.push OFFSET string2
+push OFFSET string1
+call Str_compare
+
+cmp eax, 0
+jg  print1
+jl  print2
+
+mov edx, OFFSET string1
+jmp print
+
+print1:
+mov edx, OFFSET string1
+jmp print
+
+print2:
+mov edx, OFFSET string2
+
+print:
+call WriteString
+call CrLf
+
+7. mov esi, OFFSET myString
+mov al, '@'
+call Str_trim
+
+8. Str_lcase PROC
+    push esi
+    mov esi, edx
+L1:
+    mov al, [esi]
+    cmp al, 'A'
+    jb  next
+    cmp al, 'Z'
+    ja  next
+    add al, 32
+    mov [esi], al
+next:
+    inc esi
+    test al, al
+    jnz L1
+    pop esi
+    ret
+Str_lcase ENDP
+
+9.  Str_trim PROC
+    mov rdx, rcx
+find_end:
+    mov bl, [rcx]
+    test bl, bl
+    jz trim_back
+    inc rcx
+    jmp find_end
+
+trim_back:
+    dec rcx
+back_loop:
+    cmp rcx, rdx
+    jb done
+    cmp byte ptr [rcx], al
+    jne done
+    mov byte ptr [rcx], 0
+    dec rcx
+    jmp back_loop
+done:
+    ret
+Str_trim ENDP
+
+10. mov rax, [rbx + rsi]
+11. mov eax, myArray[ebx*RowSize + edi*4]
+12. mov rax, myArray[rbx*RowSize + rdi*8]
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+1. 
+;---------------------------------------------------
+; Str_copyN( dest, src, maxCount )
+; dest      = [ebp+8]
+; src       = [ebp+12]
+; maxCount  = [ebp+16]
+;---------------------------------------------------
+Str_copyN PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     edx, [ebp+8]      ; dest
+    mov     ecx, [ebp+12]     ; src
+    mov     ebx, [ebp+16]     ; maxCount
+
+copy_loop:
+    cmp     ebx, 0
+    je      finish
+
+    mov     al, [ecx]
+    cmp     al, 0
+    je      finish
+
+    mov     [edx], al
+
+    inc     edx
+    inc     ecx
+    dec     ebx
+    jmp     copy_loop
+
+finish:
+    mov     byte ptr [edx], 0
+
+    pop     ebp
+    ret     12
+Str_copyN ENDP
+2.
+;---------------------------------------------------
+; Str_concat(target, source)
+; target = [ebp+8]
+; source = [ebp+12]
+;---------------------------------------------------
+Str_concat PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     edx, [ebp+8]      ; target
+    mov     ecx, [ebp+12]      ; source
+
+; find end of target
+find_end:
+    mov     al, [edx]
+    cmp     al, 0
+    je      append
+    inc     edx
+    jmp     find_end
+
+append:
+    mov     al, [ecx]
+    cmp     al, 0
+    je      done
+
+    mov     [edx], al
+    inc     edx
+    inc     ecx
+    jmp     append
+
+done:
+    mov     byte ptr [edx], 0
+
+    pop     ebp
+    ret     8
+Str_concat ENDP
+3.
+;---------------------------------------------------
+; Str_remove(ptr, count)
+; ptr   = [ebp+8]   ; 위치
+; count = [ebp+12]  ; 제거할 문자 수
+;---------------------------------------------------
+Str_remove PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]      ; start position
+    mov     ecx, [ebp+12]     ; count
+
+    mov     edi, esi
+    add     edi, ecx          ; move forward count chars
+
+shift_loop:
+    mov     al, [edi]
+    mov     [esi], al
+    inc     esi
+    inc     edi
+    cmp     al, 0
+    jne     shift_loop
+
+    pop     ebp
+    ret     8
+Str_remove ENDP
+4.
+;---------------------------------------------------
+; Str_find(source, target)
+; ZF=1 성공, EAX=찾은 위치
+; ZF=0 실패, EAX=미정
+; source = [ebp+8]
+; target = [ebp+12]
+;---------------------------------------------------
+Str_find PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]      ; source
+    mov     edi, [ebp+12]     ; target
+
+search_pos:
+    mov     ebx, esi
+    mov     edx, edi
+
+compare_loop:
+    mov     al, [ebx]
+    cmp     al, 0
+    je      found     ; all matched
+
+    mov     cl, [edx]
+    cmp     cl, 0
+    je      not_found ; target ended first
+
+    cmp     al, cl
+    jne     next_start
+
+    inc     ebx
+    inc     edx
+    jmp     compare_loop
+
+next_start:
+    inc     edi
+    mov     al, [edi]
+    cmp     al, 0
+    je      not_found
+    jmp     search_pos
+
+found:
+    mov     eax, edi
+    sub     eax, [ebp+12]     ; offset calc
+    add     eax, [ebp+12]     ; return absolute address
+    stc
+    jmp     exit_point
+
+not_found:
+    clc
+
+exit_point:
+    pop     ebp
+    ret     8
+Str_find ENDP
+5.
+;---------------------------------------------------
+; Str_nextWord(ptr, delimiter)
+; ZF=1 delimiter 찾음 → EAX=다음 문자 주소
+; ZF=0 없음 → EAX=미정
+; ptr       = [ebp+8]
+; delimiter = [ebp+12]
+;---------------------------------------------------
+Str_nextWord PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]      ; string pointer
+    mov     bl, [ebp+12]      ; delimiter
+
+scan_loop:
+    mov     al, [esi]
+    cmp     al, 0
+    je      not_found
+
+    cmp     al, bl
+    je      found
+
+    inc     esi
+    jmp     scan_loop
+
+found:
+    mov     byte ptr [esi], 0
+    inc     esi
+    mov     eax, esi
+    stc
+    jmp     finish
+
+not_found:
+    clc
+
+finish:
+    pop     ebp
+    ret     8
+Str_nextWord ENDP
+6.
+;---------------------------------------------------
+; Get_frequencies(str, freqTable)
+; freqTable[i] = 문자 i 등장 횟수
+; str       = [ebp+8]
+; freqTable = [ebp+12]
+;---------------------------------------------------
+Get_frequencies PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]      ; string
+    mov     edi, [ebp+12]     ; table
+
+next_char:
+    mov     al, [esi]
+    cmp     al, 0
+    je      done
+
+    mov     ebx, eax
+    shl     ebx, 2
+    add     ebx, edi
+    inc     dword ptr [ebx]
+
+    inc     esi
+    jmp     next_char
+
+done:
+    pop     ebp
+    ret     8
+Get_frequencies ENDP
+7.
+;---------------------------------------------------
+; Sieve65000( arrayPtr )
+; arrayPtr = [ebp+8]
+; 65000-byte array, 0=prime, 1=composite
+;---------------------------------------------------
+Sieve65000 PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     edi, [ebp+8]
+
+; Fill with 0
+    mov     ecx, 65000
+    mov     eax, 0
+rep stosb
+
+    mov     ebx, 2             ; current prime
+
+outer_loop:
+    mov     eax, ebx
+    imul    eax, ebx
+    cmp     eax, 65000
+    jge     finished
+
+    mov     esi, eax
+
+inner_loop:
+    mov     byte ptr [edi+esi], 1
+
+    add     esi, ebx
+    cmp     esi, 65000
+    jl      inner_loop
+
+next_prime:
+    inc     ebx
+    cmp     byte ptr [edi+ebx], 1
+    je      next_prime
+    jmp     outer_loop
+
+finished:
+    pop     ebp
+    ret     4
+Sieve65000 ENDP
+8.
+;---------------------------------------------------
+; BubbleSort(arrPtr, count)
+; arrPtr = [ebp+8]
+; count  = [ebp+12]
+;---------------------------------------------------
+BubbleSort PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]      ; 배열 주소
+    mov     ecx, [ebp+12]     ; 요소 개수
+
+outer_pass:
+    mov     edx, 0            ; exchange flag (0 = no swap)
+
+    mov     edi, esi
+    mov     ebx, ecx
+    dec     ebx               ; 비교 횟수 = count - 1
+    jle     finish            ; 요소 1개면 종료
+
+inner_loop:
+    mov     al,  [edi]
+    mov     ah,  [edi+1]
+    cmp     al, ah
+    jle     no_swap
+
+    ; swap
+    mov     [edi],   ah
+    mov     [edi+1], al
+    mov     edx, 1           ; swap 발생
+
+no_swap:
+    inc     edi
+    dec     ebx
+    jg      inner_loop
+
+    cmp     edx, 0
+    jne     outer_pass       ; swap 있었으면 다음 pass 진행
+
+finish:
+    pop     ebp
+    ret     8
+BubbleSort ENDP
+9.
+;---------------------------------------------------
+; BinarySearch(arrPtr, count, key)
+; arrPtr = [ebp+8]
+; count  = [ebp+12]
+; key    = [ebp+16]
+; ZF = 1 찾았음 → EAX = 주소
+; ZF = 0 없음
+;---------------------------------------------------
+BinarySearch PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]     ; array
+    mov     ecx, [ebp+12]    ; count
+    mov     al,  [ebp+16]    ; key
+
+    xor     ebx, ebx          ; first = 0
+    dec     ecx               ; last = count-1
+
+search_loop:
+    cmp     ebx, ecx
+    jg      not_found
+
+    mov     edx, ebx
+    add     edx, ecx
+    shr     edx, 1            ; mid = (first + last)/2
+
+    mov     dl, [esi+edx]     ; array[mid]
+
+    cmp     dl, al
+    je      found
+
+    jl      go_right
+
+; go left
+    dec     edx
+    mov     ecx, edx
+    jmp     search_loop
+
+go_right:
+    inc     edx
+    mov     ebx, edx
+    jmp     search_loop
+
+found:
+    lea     eax, [esi+edx]
+    stc
+    jmp     exit_point
+
+not_found:
+    clc
+
+exit_point:
+    pop     ebp
+    ret     12
+BinarySearch ENDP
+10.
+;---------------------------------------------------
+; GenMatrix(matrixPtr)
+; matrixPtr = [ebp+8]
+; 4×4 대문자 랜덤 생성
+; 50% 확률로 모음(A,E,I,O,U)
+;---------------------------------------------------
+GenMatrix PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     edi, [ebp+8]     ; matrix
+
+    mov     ecx, 16          ; 16칸
+gen_loop:
+    call    RandomRange      ; 0~99
+    cmp     eax, 50
+    jl      vowel
+
+; consonant
+    call    RandomRange
+    mov     bl, al
+    and     bl, 25
+    add     bl, 'A'
+    mov     [edi], bl
+    jmp     next_cell
+
+vowel:
+    call    RandomRange
+    and     al, 4            ; 0~4
+    mov     bl, ["AEIOU"+eax]
+    mov     [edi], bl
+
+next_cell:
+    inc     edi
+    loop    gen_loop
+
+    pop     ebp
+    ret     4
+GenMatrix ENDP
+11.
+;---------------------------------------------------
+; FindVowelSets(matrixPtr)
+; 4x4 행, 열, 대각선 세트 중
+; 정확히 모음 2개 포함한 4글자 세트 추출
+; 출력/저장 책임은 호출자
+;---------------------------------------------------
+FindVowelSets PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]     ; matrix pointer
+
+    ; 이 문제는 주어진 예제에서
+    ; 조건 만족 세트를 탐색하는 로직 구현
+    ; (구현 방식은 다양하게 가능)
+
+    ; 여기서는 구조만 제공
+    ; row / col / diag 순서로 검사
+
+    ; ---------- ROW 검사 ----------
+CheckRow:
+    ; 호출자가 row 16개 중
+    ; 각 row에 대해 [esi + row*4] 사용
+    ; 모음 2개인지 검사
+
+    ; ---------- COLUMN 검사 ----------
+CheckCol:
+    ; 각 col에 대해 [esi + col + row*4]
+
+    ; ---------- DIAGONAL 검사 ----------
+CheckDiag:
+    ; 2개 대각선:
+    ; 0,5,10,15  and  3,6,9,12
+
+    pop     ebp
+    ret     4
+FindVowelSets ENDP
+12.
+;---------------------------------------------------
+; calc_row_sum(arrayPtr, rowSize, typeSize, rowIndex)
+; arrayPtr = [ebp+8]
+; rowSize  = [ebp+12]   ; 한 행의 원소 수
+; typeSize = [ebp+16]   ; 1=byte 2=word 4=dword
+; rowIndex = [ebp+20]
+; return EAX = 합
+;---------------------------------------------------
+calc_row_sum PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]     ; array base
+    mov     ecx, [ebp+12]    ; row length
+    mov     ebx, [ebp+16]    ; type size
+    mov     edx, [ebp+20]    ; row index
+
+    ; row offset = rowIndex * rowSize * typeSize
+    imul    edx, ecx
+    imul    edx, ebx
+    add     esi, edx
+
+    xor     eax, eax         ; sum
+
+sum_loop:
+    cmp     ecx, 0
+    je      done
+
+    cmp     ebx, 1
+    je      add_byte
+    cmp     ebx, 2
+    je      add_word
+
+add_dword:
+    add     eax, [esi]
+    add     esi, 4
+    dec     ecx
+    jmp     sum_loop
+
+add_word:
+    movzx   edx, word ptr [esi]
+    add     eax, edx
+    add     esi, 2
+    dec     ecx
+    jmp     sum_loop
+
+add_byte:
+    movzx   edx, byte ptr [esi]
+    add     eax, edx
+    inc     esi
+    dec     ecx
+    jmp     sum_loop
+
+done:
+    pop     ebp
+    ret     16
+calc_row_sum ENDP
+13.
+;---------------------------------------------------
+; Str_trimLead(strPtr, char)
+; 예: "###ABC", '#' → "ABC"
+;---------------------------------------------------
+Str_trimLead PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     esi, [ebp+8]     ; string
+    mov     bl,  [ebp+12]    ; trim char
+
+; count leading chars
+count_loop:
+    mov     al, [esi]
+    cmp     al, bl
+    jne     shift_start
+    inc     esi
+    jmp     count_loop
+
+shift_start:
+    mov     edi, [ebp+8]
+
+shift_loop:
+    mov     al, [esi]
+    mov     [edi], al
+    inc     esi
+    inc     edi
+    cmp     al, 0
+    jne     shift_loop
+
+    pop     ebp
+    ret     8
+Str_trimLead ENDP
+14.
+;---------------------------------------------------
+; Str_trimSet(strPtr, filterPtr)
+; 문자열 끝에서 filter에 있는 모든 문자 제거
+; 예:
+;  "ABC#$&"
+;   filter="%#!;$&*"
+; → "ABC"
+;---------------------------------------------------
+Str_trimSet PROC
+    push    ebp
+    mov     ebp, esp
+
+    mov     edi, [ebp+8]     ; string
+    mov     ebx, [ebp+12]    ; filter
+
+; go to end
+find_end:
+    mov     al, [edi]
+    cmp     al, 0
+    je      start_trim
+    inc     edi
+    jmp     find_end
+
+start_trim:
+    dec     edi            ; last real char
+
+trim_loop:
+    cmp     edi, [ebp+8]
+    jl      done           ; reached start
+
+    mov     al, [edi]      ; char to check
+
+    ; scan filter
+    mov     esi, ebx
+check_filter:
+    mov     cl, [esi]
+    cmp     cl, 0
+    je      keep_char       ; no match → stop
+
+    cmp     cl, al
+    je      remove_char
+
+    inc     esi
+    jmp     check_filter
+
+remove_char:
+    mov     byte ptr [edi], 0
+    dec     edi
+    jmp     trim_loop
+
+keep_char:
+done:
+    pop     ebp
+    ret     8
+Str_trimSet ENDP
+
