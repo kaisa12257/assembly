@@ -1,0 +1,52 @@
+Boolean 표현식이란?
+Boolean(불리언) 표현식은 참(True) / 거짓(False) 만을 다루는 논리 연산이다.
+어셈블리에서는 이런 논리가 비트 연산(Bit 연산) 으로 그대로 사용된다.
+기본 연산 종류로써는
+¬X	NOT X	NOT
+X ∧ Y	X AND Y	AND
+X ∨ Y	X OR Y	OR
+¬X ∨ Y	(NOT X) OR Y	NOT → OR
+¬(X ∧ Y)	NOT (X AND Y)	AND → NOT
+X ∧ ¬Y	X AND (NOT Y)	NOT → AND
+진리표에서의  핵심은?
+NOT
+X	¬X
+F	T
+T	F
+AND
+X	Y	X ∧ Y
+F	F	F
+F	T	F
+T	F	F
+T	T	T
+OR
+X	Y	X ∨ Y
+F	F	F
+F	T	T
+T	F	T
+T	T	T
+연산자 우선순위 (Order of Operations)
+표현식	실행 순서
+¬X ∨ Y	NOT → OR
+¬(X ∨ Y)	OR → NOT
+X ∨ (Y ∧ Z)	AND → OR
+
+어셈블리에서 Boolea는?
+Boolean 연산은 조건문, 점프, 플래그 제어에 직접 연결됨.
+Boolean 값 저장 방법
+- MOV EAX, 0   ; False
+- MOV EAX, 1   ; True
+또는 
+XOR EAX, EAX  ; EAX = 0 (False)
+AND / OR 조건 처리 방식 (논리식 처리)
+if (A > 0 && B > 0)
+CMP A, 0
+JLE FAIL
+CMP B, 0
+JLE FAIL
+; 여기 도달하면 AND 조건 True
+
+
+
+
+
