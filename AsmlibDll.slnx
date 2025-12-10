@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="AsmDllTest/AsmDllTest.vcxproj" Id="f6b55e33-d084-4555-af49-4fd8f52cc127" />
+  <Project Path="AsmlibDll/AsmlibDll.vcxproj" Id="0753077a-7ef4-44c6-a670-7aa374840778" />
+  <Project Path="AsmStaticLib/AsmStaticLib.vcxproj" Id="1ddbbe0f-265c-4b64-a196-c84d519b4304" />
+</Solution>
